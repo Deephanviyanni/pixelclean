@@ -633,6 +633,11 @@
 
     <form id="authForm" onsubmit="handleAuthSubmit(event)" style="display:flex;flex-direction:column;gap:12px;">
       <input type="email" id="authEmail" placeholder="Email" required autocomplete="email" style="padding:11px 14px;border-radius:9px;border:1px solid var(--border2,#27273a);background:transparent;color:var(--text,#fff);font-size:14px;outline:none;">
+      
+      <!-- First Name & Last Name for Signup Only -->
+      <input type="text" id="authFirstName" placeholder="First Name" autocomplete="given-name" style="display:none;padding:11px 14px;border-radius:9px;border:1px solid var(--border2,#27273a);background:transparent;color:var(--text,#fff);font-size:14px;outline:none;">
+      <input type="text" id="authLastName" placeholder="Last Name" autocomplete="family-name" style="display:none;padding:11px 14px;border-radius:9px;border:1px solid var(--border2,#27273a);background:transparent;color:var(--text,#fff);font-size:14px;outline:none;">
+      
       <input type="password" id="authPassword" placeholder="Password (min 6 characters)" required minlength="6" autocomplete="current-password" style="padding:11px 14px;border-radius:9px;border:1px solid var(--border2,#27273a);background:transparent;color:var(--text,#fff);font-size:14px;outline:none;">
       <label style="display:flex;align-items:center;gap:8px;color:var(--text3,#888);font-size:13px;cursor:pointer;">
         <input type="checkbox" id="authRemember" checked style="width:16px;height:16px;cursor:pointer;">
@@ -640,6 +645,13 @@
       </label>
       <button type="submit" id="authSubmitBtn" style="margin-top:4px;padding:12px;border-radius:9px;border:none;background:var(--accent,#7B5EF8);color:#fff;font-weight:600;font-size:14px;cursor:pointer;">Log In</button>
       <button type="button" id="forgotPasswordLink" onclick="showResetRequestForm()" style="background:none;border:none;color:var(--text3,#888);font-size:13px;cursor:pointer;text-align:center;padding:2px;">Forgot password?</button>
+    </form>
+
+    <!-- Signup email verification (shown right after creating the account) -->
+    <form id="signupEmailForm" onsubmit="handleSignupEmailVerify(event)" style="display:none;flex-direction:column;gap:12px;">
+      <div style="color:var(--text2,#aaa);font-size:13px;margin-bottom:-4px;">We emailed a 6-digit code to <span id="signupEmailDisplay" style="color:var(--text,#fff);font-weight:600;"></span>. Enter it below to verify your email and finish signing up.</div>
+      <input type="text" id="signupEmailOtp" placeholder="6-digit code" required maxlength="6" inputmode="numeric" pattern="[0-9]*" style="padding:11px 14px;border-radius:9px;border:1px solid var(--border2,#27273a);background:transparent;color:var(--text,#fff);font-size:14px;outline:none;letter-spacing:2px;">
+      <button type="submit" id="signupEmailVerifyBtn" style="margin-top:4px;padding:12px;border-radius:9px;border:none;background:var(--accent,#7B5EF8);color:#fff;font-weight:600;font-size:14px;cursor:pointer;">Verify Email</button>
     </form>
 
     <!-- Reset request form: user enters email to receive a reset link -->
@@ -720,6 +732,10 @@
     <button class="tab-btn" onclick="setTab('en',this)">
       <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
       Enhance & Fix
+    </button>
+    <button class="tab-btn" onclick="setTab('ai',this)">
+      <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      AI Assistant
     </button>
   </div>
 
@@ -998,7 +1014,43 @@
         </div>
       </div>
 
-    </div><!-- end right col -->
+      <!-- ===== AI ASSISTANT PANEL ===== -->
+      <div id="aiPanel" class="panel" style="display:none">
+        <div class="panel-head"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>AI Assistant</div>
+        <div class="panel-body">
+          <div class="panel-lbl">Describe your edit in plain English</div>
+          <p style="color:var(--text2);font-size:13px;margin-bottom:12px;">The AI will interpret your request and apply the appropriate tool or suggest next steps.</p>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;">
+            <input type="text" id="aiPrompt2" placeholder="e.g., 'remove the logo', 'detect text', 'translate to French', 'blur the license plate'..." style="width:100%;border:none;background:transparent;color:var(--text);font-size:14px;font-family:var(--font-body);outline:none;">
+          </div>
+          <button class="fbtn" onclick="runAIEdit2()" style="width:100%;"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Send to AI</button>
+          
+          <div class="panel-lbl" style="margin-top:20px;">Quick commands</div>
+          <div class="tgrid">
+            <button class="tbtn" onclick="aiCommand('detect text')"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg><div class="tlbl"><strong>Detect Text</strong><small>Find & box text</small></div></button>
+            <button class="tbtn" onclick="aiCommand('remove text')"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></svg><div class="tlbl"><strong>Remove Text</strong><small>Delete detected text</small></div></button>
+            <button class="tbtn" onclick="aiCommand('blur sensitive')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg><div class="tlbl"><strong>Blur Area</strong><small>Hide sensitive data</small></div></button>
+            <button class="tbtn" onclick="aiCommand('translate to French')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg><div class="tlbl"><strong>Translate</strong><small>Translate text</small></div></button>
+            <button class="tbtn" onclick="aiCommand('remove object')"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><div class="tlbl"><strong>Remove Object</strong><small>Switch to removal</small></div></button>
+            <button class="tbtn" onclick="aiCommand('help')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><div class="tlbl"><strong>Help</strong><small>See all commands</small></div></button>
+          </div>
+
+          <div class="panel-lbl" style="margin-top:20px;">Supported commands</div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:12px;color:var(--text2);line-height:1.7;">
+            <strong style="color:var(--text);">Text operations:</strong><br>
+            "detect text", "remove text", "translate to [language]", "replace [old] with [new]", "add text [your text]"<br><br>
+            <strong style="color:var(--text);">Object removal:</strong><br>
+            "remove the [object]", "remove logo", "blur [area]", "redact [content]"<br><br>
+            <strong style="color:var(--text);">Supported languages:</strong><br>
+            English, French, Spanish, German, Italian, Tamil, Hindi, Malayalam, Telugu, Kannada
+          </div>
+          
+          <button class="sbtn" onclick="resetAll()" style="margin-top:14px;"><svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>Reset image</button>
+          <button class="fbtn" onclick="saveShow()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Save &amp; Download</button>
+
+          <div id="aiAssistantResult" style="margin-top:14px;"></div>
+        </div>
+      </div>
   </div><!-- end editor-layout -->
 </section>
 
@@ -1062,6 +1114,8 @@ function setAuthMode(mode) {
   const loginTab = document.getElementById('authTabLogin');
   const signupTab = document.getElementById('authTabSignup');
   const submitBtn = document.getElementById('authSubmitBtn');
+  const firstNameField = document.getElementById('authFirstName');
+  const lastNameField = document.getElementById('authLastName');
   hideAuthMessages();
   showLoginForm();
   if (mode === 'login') {
@@ -1069,11 +1123,19 @@ function setAuthMode(mode) {
     signupTab.style.background = 'transparent'; signupTab.style.borderColor = 'var(--border2,#27273a)'; signupTab.style.color = 'var(--text,#fff)';
     submitBtn.textContent = 'Log In';
     document.getElementById('authPassword').setAttribute('autocomplete', 'current-password');
+    firstNameField.style.display = 'none';
+    lastNameField.style.display = 'none';
+    firstNameField.required = false;
+    lastNameField.required = false;
   } else {
     signupTab.style.background = 'var(--accent,#7B5EF8)'; signupTab.style.borderColor = 'var(--accent,#7B5EF8)'; signupTab.style.color = '#fff';
     loginTab.style.background = 'transparent'; loginTab.style.borderColor = 'var(--border2,#27273a)'; loginTab.style.color = 'var(--text,#fff)';
     submitBtn.textContent = 'Create Account';
     document.getElementById('authPassword').setAttribute('autocomplete', 'new-password');
+    firstNameField.style.display = '';
+    lastNameField.style.display = '';
+    firstNameField.required = true;
+    lastNameField.required = true;
   }
 }
 
@@ -1083,6 +1145,16 @@ function showLoginForm() {
   document.getElementById('authForm').style.display = 'flex';
   document.getElementById('resetRequestForm').style.display = 'none';
   document.getElementById('newPasswordForm').style.display = 'none';
+  document.getElementById('signupEmailForm').style.display = 'none';
+  hideAuthMessages();
+}
+function showSignupEmailForm(email) {
+  document.getElementById('authTabs').style.display = 'none';
+  document.getElementById('authForm').style.display = 'none';
+  document.getElementById('resetRequestForm').style.display = 'none';
+  document.getElementById('newPasswordForm').style.display = 'none';
+  document.getElementById('signupEmailForm').style.display = 'flex';
+  document.getElementById('signupEmailDisplay').textContent = email;
   hideAuthMessages();
 }
 function showResetRequestForm() {
@@ -1090,6 +1162,9 @@ function showResetRequestForm() {
   document.getElementById('authForm').style.display = 'none';
   document.getElementById('resetRequestForm').style.display = 'flex';
   document.getElementById('newPasswordForm').style.display = 'none';
+  document.getElementById('emailLoginForm').style.display = 'none';
+  document.getElementById('emailLoginVerifyForm').style.display = 'none';
+  document.getElementById('signupEmailForm').style.display = 'none';
   hideAuthMessages();
   const currentEmail = document.getElementById('authEmail').value.trim();
   if (currentEmail) document.getElementById('resetEmail').value = currentEmail;
@@ -1099,6 +1174,9 @@ function showNewPasswordForm() {
   document.getElementById('authForm').style.display = 'none';
   document.getElementById('resetRequestForm').style.display = 'none';
   document.getElementById('newPasswordForm').style.display = 'flex';
+  document.getElementById('emailLoginForm').style.display = 'none';
+  document.getElementById('emailLoginVerifyForm').style.display = 'none';
+  document.getElementById('signupEmailForm').style.display = 'none';
   hideAuthMessages();
 }
 
@@ -1173,6 +1251,8 @@ async function handleAuthSubmit(e) {
   hideAuthMessages();
   const email = document.getElementById('authEmail').value.trim();
   const password = document.getElementById('authPassword').value;
+  const firstName = document.getElementById('authFirstName').value.trim();
+  const lastName = document.getElementById('authLastName').value.trim();
   const remember = document.getElementById('authRemember').checked;
   const btn = document.getElementById('authSubmitBtn');
   btn.disabled = true;
@@ -1181,24 +1261,88 @@ async function handleAuthSubmit(e) {
 
   try {
     if (authMode === 'login') {
+      // LOGIN
       const { data, error } = await sb.auth.signInWithPassword({ email, password });
       if (error) throw error;
+
+      if (!data.user.email_confirmed_at) {
+        showAuthError('Your email is not verified yet. Please check your email and verify.');
+        return;
+      }
       onAuthSuccess(data.session, remember);
     } else {
+      // SIGNUP - Create account and save profile data
       const { data, error } = await sb.auth.signUp({ email, password });
       if (error) throw error;
-      if (data.session) {
-        onAuthSuccess(data.session, remember);
-      } else {
-        showAuthNotice('Account created! Check your email to confirm, then log in.');
-        setAuthMode('login');
+
+      const userId = data.user.id;
+
+      // Store first and last name in profiles table
+      try {
+        const { error: profileError } = await sb
+          .from('profiles')
+          .upsert({
+            id: userId,
+            email: email,
+            first_name: firstName,
+            last_name: lastName,
+            created_at: new Date().toISOString()
+          }, { onConflict: 'id' });
+        
+        if (profileError) {
+          console.error('Profile save error:', profileError);
+          showAuthError('Account created but profile save failed. Please contact support.');
+          return;
+        }
+      } catch (err) {
+        console.error('Profile save exception:', err);
       }
+
+      try {
+        sessionStorage.setItem('pixelclean_pending_remember', remember ? '1' : '0');
+      } catch (_) {}
+
+      // Send verification email
+      await startSignupEmailVerification(email);
     }
   } catch (err) {
     showAuthError(err.message || 'Something went wrong. Please try again.');
   } finally {
     btn.disabled = false;
     btn.textContent = originalText;
+  }
+}
+
+// Sends a 6-digit login/verification code to the given email and shows the
+// code-entry screen. Works for brand-new signups and existing accounts.
+async function startSignupEmailVerification(email) {
+  const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
+  if (error) throw error;
+  showSignupEmailForm(email);
+}
+
+async function handleSignupEmailVerify(e) {
+  e.preventDefault();
+  hideAuthMessages();
+  const email = document.getElementById('signupEmailDisplay').textContent;
+  const otp = document.getElementById('signupEmailOtp').value.trim();
+  const btn = document.getElementById('signupEmailVerifyBtn');
+  btn.disabled = true;
+  const original = btn.textContent;
+  btn.textContent = 'Verifying...';
+  try {
+    const { data, error } = await sb.auth.verifyOtp({ email, token: otp, type: 'email' });
+    if (error) throw error;
+    let remember = true;
+    try { remember = sessionStorage.getItem('pixelclean_pending_remember') !== '0'; } catch (_) {}
+    try { sessionStorage.removeItem('pixelclean_pending_remember'); } catch (_) {}
+    showAuthNotice('Email verified! You\'re all set.');
+    onAuthSuccess(data.session, remember);
+  } catch (err) {
+    showAuthError(err.message || 'Invalid or expired code. Please try again.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
   }
 }
 
@@ -1209,11 +1353,28 @@ function onAuthSuccess(session, remember) {
   showLoggedInUI(session.user);
 }
 
-function showLoggedInUI(user) {
+async function showLoggedInUI(user) {
   document.getElementById('authGate').style.display = 'none';
   const slot = document.getElementById('navUserSlot');
   slot.style.display = 'flex';
-  document.getElementById('navUserEmail').textContent = user.email || '';
+  
+  // Try to fetch user profile data
+  try {
+    const { data: profile, error } = await sb
+      .from('profiles')
+      .select('first_name, last_name')
+      .eq('id', user.id)
+      .single();
+    
+    if (!error && profile) {
+      const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+      document.getElementById('navUserEmail').textContent = fullName || user.email || '';
+    } else {
+      document.getElementById('navUserEmail').textContent = user.email || '';
+    }
+  } catch (_) {
+    document.getElementById('navUserEmail').textContent = user.email || '';
+  }
 }
 
 async function handleLogout() {
@@ -1253,7 +1414,11 @@ async function initAuth() {
   if (inRecoveryFlow) return;
 
   if (data.session && remembered) {
-    showLoggedInUI(data.session.user);
+    if (!data.session.user.email_confirmed_at) {
+      await sb.auth.signOut();
+    } else {
+      showLoggedInUI(data.session.user);
+    }
   } else if (data.session && !remembered) {
     await sb.auth.signOut();
   }
@@ -1331,6 +1496,7 @@ function setTab(t, el) {
   document.getElementById('wmPanel').style.display = t === 'wm' ? '' : 'none';
   document.getElementById('ssPanel').style.display = t === 'ss' ? '' : 'none';
   document.getElementById('enPanel').style.display = t === 'en' ? '' : 'none';
+  document.getElementById('aiPanel').style.display = t === 'ai' ? '' : 'none';
   // Carry forward any paint/box/clone/text edits into the Enhance baseline,
   // otherwise moving a slider would silently discard prior edits.
   if (t === 'en' && cv.width && cv.height) {
@@ -1360,9 +1526,11 @@ function updateModeBar() {
       blur: '◎ Drag to blur a region',
       crop: '⬚ Drag selection then release to crop'
     },
-    en: '↕ Drag any slider — changes apply instantly to the image'
+    en: '↕ Drag any slider — changes apply instantly to the image',
+    ai: '🤖 Type a natural language command and hit Enter or click Send'
   };
   if (curTab === 'en') { setMode(msgs.en); return; }
+  if (curTab === 'ai') { setMode(msgs.ai); return; }
   setMode(msgs[curTab][curTab === 'wm' ? wmTool : ssTool] || 'Pick a tool');
 }
 
@@ -1925,6 +2093,37 @@ async function copyToClip() {
 }
 
 // ---- AI EDIT ----
+// ---- AI ASSISTANT ----
+function aiCommand(cmd) {
+  document.getElementById('aiPrompt2').value = cmd;
+  runAIEdit2();
+}
+
+async function runAIEdit2() {
+  const prompt = document.getElementById('aiPrompt2').value.trim();
+  if (!prompt) { toast('Type an edit request first'); return; }
+  if (!origPixels) { toast('Upload an image first'); return; }
+  
+  const resultEl = document.getElementById('aiAssistantResult');
+  resultEl.innerHTML = '<div class="ai-thinking" style="padding:12px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Processing...</div>';
+
+  try {
+    const text = await runLocalPromptEdit(prompt);
+    resultEl.innerHTML = `<div style="background:var(--accent-glow);border:1px solid var(--accent);border-radius:8px;padding:12px;color:var(--text);font-size:13px;margin-top:12px;"><strong>✓ AI Response:</strong><br>${text}</div>`;
+  } catch (e) {
+    console.error('AI edit failed', e);
+    resultEl.innerHTML = `<div style="background:rgba(240,94,94,0.12);border:1px solid var(--red);border-radius:8px;padding:12px;color:var(--text);font-size:13px;margin-top:12px;"><strong>✗ Error:</strong><br>${e.message || 'Unknown error'}</div>`;
+  }
+  document.getElementById('aiPrompt2').value = '';
+}
+
+document.getElementById('aiPrompt2') && document.getElementById('aiPrompt2').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    runAIEdit2();
+  }
+});
+
 async function runAIEdit() {
   const prompt = document.getElementById('aiPrompt').value.trim();
   if (!prompt) { toast('Type an edit request first'); return; }
